@@ -85,7 +85,12 @@ Class EndomondoWorkout {
 	public function __construct($source){
 		$this->source = $source;
 		$this->id = $source['id'];
+		$date = new \DateTime();
+		$this->start_time = $date->setTimestamp(strtotime($source['start_time']));
 		$this->sport = $source['sport'];
+		$this->calories = $source['calories'];
+		$this->distance = $source['distance'];
+		$this->duration = $source['duration'];
 		$this->points = isset($source['points']) ? $source['points'] : array();
 	}
 
@@ -101,15 +106,49 @@ Class EndomondoWorkout {
 		return $this->id;
 	}
 
+	public function getName(){
+		return $this->getSportName();
+	}
+
+	public function getStart(){
+		return $this->start_time;
+	}
+
+	public function getDuration(){
+		return $this->duration;
+	}
+
+	public function getCalories(){
+		return $this->calories;
+	}
+
+	public function getDistance(){
+		return $this->distance;
+	}
+
+	/*public function addActivityToFitbit(){
+		$this->fitbit->logActivity(
+				$this->getStart(),
+				'',
+				$this->getDuration() * 1000,
+				round($this->getCalories()),
+				round($this->getDistance(), 2),
+				'Kilometer',
+				$workout->getName());
+	}*/
+
 	public function printSource(){
 		print_r($this->source);
 	}
 
 	public function saveGPX($file){
-		$gpx = $this->gpx ? $this->gpx : $this->generateGPX();
 		$fp = fopen($file, 'w+');
-		fwrite($fp, $gpx);
+		fwrite($fp, $this->getGPX());
 		fclose($fp);
+	}
+
+	public function getGPX(){
+		return $this->gpx ? $this->gpx : $this->generateGPX();
 	}
 
 	private function generateGPX(){
