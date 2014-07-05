@@ -7,7 +7,10 @@
             "email": "michal@ozogan.eu"
         }
     ],
-    "require": {
-
-    }
+	"require": {
+		"PHP" : ">=5.2"
+	},
+	"autoload": {
+		"psr-0": { "Endomondo": "lib/" }
+	}
 }
