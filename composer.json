@@ -1,0 +1,13 @@
+{
+    "name": "fabulator/endomondo-api",
+    "description": "Simple Endomondo Api Class",
+    "authors": [
+        {
+            "name": "Michal Ozogán",
+            "email": "michal@ozogan.eu"
+        }
+    ],
+    "require": {
+
+    }
+}

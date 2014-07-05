@@ -1,5 +1,7 @@
 <?php
 
+namespace Endomondo;
+
 Class Endomondo {
 
     public $country = "PL";
@@ -40,10 +42,10 @@ Class Endomondo {
     }
 
     /**
-     * Function returnns authentication token. If token is not assigned  
-     * by hand it is acquired by sending request to endomondo server with 
-     * valid email ald password 
-     * 
+     * Function returnns authentication token. If token is not assigned
+     * by hand it is acquired by sending request to endomondo server with
+     * valid email ald password
+     *
      * @return string authentication token
      */
     final protected function get_auth_token() {
@@ -54,7 +56,7 @@ Class Endomondo {
 
     /**
      * Returns quick info about workout. It's ';' separated values. Some of the values are empty, Donno why, dont ask me.
-     * 
+     *
      * @param int $trackId
      * @return string
      */
@@ -67,9 +69,9 @@ Class Endomondo {
     }
 
     /**
-     * Returns lists of brief informations about latest workouts. When no parameter 
+     * Returns lists of brief informations about latest workouts. When no parameter
      * is passed then it returns workouts of current user but you can pass id of anyone.
-     * 
+     *
      * @param int $maxResults
      * @return array of workouts
      */
@@ -97,9 +99,9 @@ Class Endomondo {
     }
 
     /**
-     * Returns informations about single workout. Information can be limited to: basic 
-     * informations (speed, altitude, hydration, calories etc.), attached pictures, 
-     * tagged users, gps points, and intervals. Or combinations of them. 
+     * Returns informations about single workout. Information can be limited to: basic
+     * informations (speed, altitude, hydration, calories etc.), attached pictures,
+     * tagged users, gps points, and intervals. Or combinations of them.
      * @param int $workoutId
      * @return array
      */
@@ -114,10 +116,10 @@ Class Endomondo {
     }
 
     /**
-     * Returns list of 15 most recent users actions. Paging is done by passing 
-     * beforeid (workout id or some other action id) and it's time. Then function will return 
+     * Returns list of 15 most recent users actions. Paging is done by passing
+     * beforeid (workout id or some other action id) and it's time. Then function will return
      * 15 actions before that actions date.
-     * 
+     *
      * @param int $userId
      * @param int $beforeId
      * @param string $before
@@ -168,11 +170,11 @@ Class Endomondo {
     }
 
     /**
-     * Getting all workouts of any user. Workouts must be visible for others. 
-     * Beforeid an before are optional. These 2 parameters are used to set a limit. 
+     * Getting all workouts of any user. Workouts must be visible for others.
+     * Beforeid an before are optional. These 2 parameters are used to set a limit.
      * When set, only workouts lower than beforeId and older than before are returned.
-     * 
-     * @param type $userId id user we wont get workouts of 
+     *
+     * @param type $userId id user we wont get workouts of
      * @param type $beforeId id of workout
      * @param type $before time of workout
      * @return type
@@ -214,7 +216,7 @@ Class Endomondo {
 
     /**
      * Function glues keys and parameters in one long urlsafe link using & signs between
-     * 
+     *
      * @param array $fields parameters
      * @return type
      */
