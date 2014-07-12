@@ -2,43 +2,59 @@
 
 namespace Endomondo;
 
+use Rhumsaa\Uuid\Uuid;
+use Rhumsaa\Uuid\Exception\UnsatisfiedDependencyException;
+use GuzzleHttp\Client;
+
 Class Endomondo {
 
 		public $country = "PL";
 		public $device_id = null;
 		public $os = "Android";
-		public $app_version = "7.1";
+		public $app_version = "10.2.6";
 		public $app_variant = "M-Pro";
-		public $os_version = "2.3.6";
+		public $os_version = "4.1";
 		public $model = "GT-B5512";
 		public $auth_token = null;
 		public $user_agent = null;
-		private $curl_handler = null;
 		public $language = 'EN';
 		private $email = null;
 		private $password = null;
+		private $profile = null;
 
 		# Authentication url. Special case.
-		const URL_AUTH = 'https://api.mobile.endomondo.com/mobile/auth';
+		const URL_AUTH = '/mobile/auth';
 		# Page for latest workouts.
-		const URL_WORKOUTS = 'http://api.mobile.endomondo.com/mobile/api/workout/list';
+		const URL_WORKOUTS = '/mobile/api/workout/list';
 		# Single workout
-		const URL_WORKOUT = 'http://api.mobile.endomondo.com/mobile/api/workout/get';
+		const URL_WORKOUT = '/mobile/api/workout/get';
+
+		const URL_PROFILE_GET = '/mobile/api/profile/account/get';
+
+		const URL_PROFILE_POST = '/mobile/api/profile/account/post';
+
+		const URL_WORKOUT_POST  = '/mobile/api/workout/post';
+
+		const URL_WORKOUT_CREATE  = '/mobile/api/workout/create';
 		# Running track
-		const URL_TRACK = 'http://api.mobile.endomondo.com/mobile/readTrack';
+		const URL_TRACK = '/mobile/readTrack';
 		# Music track
-		const URL_PLAYLIST = 'http://api.mobile.endomondo.com/mobile/api/workout/playlist';
+		const URL_PLAYLIST = '/mobile/api/workout/playlist';
 		# User feed
-		const URL_FEED = 'http://api.mobile.endomondo.com/mobile/api/feed';
+		const URL_FEED = '/mobile/api/feed';
 		# Notification list
-		const URL_NOTIFICATION = 'http://api.mobile.endomondo.com/mobile/api/notification/list';
+		const URL_NOTIFICATION = '/mobile/api/notification/list';
 
 		public function __construct($email = null, $password = null) {
-				$this->device_id = md5(gethostname());
+				$this->device_id = (string) Uuid::uuid5(Uuid::NAMESPACE_DNS, gethostname());
 				$this->user_agent = sprintf("Dalvik/1.4.0 (Linux; U; %s %s; %s Build/GINGERBREAD)", $this->os, $this->os_version, $this->model);
-
+				$this->httpclient = new Client(['base_url' => 'https://api.mobile.endomondo.com']);
 				$this->email = $email;
 				$this->password = $password;
+
+				$profile = $this->get_profile();
+
+				$this->profile = $profile->data;
 		}
 
 		/**
@@ -52,6 +68,10 @@ Class Endomondo {
 				if (!isset($this->auth_token[0]))
 						$this->auth_token = $this->request_auth_token($this->email, $this->password);
 				return $this->auth_token;
+		}
+
+		public function getUserID(){
+			return $this->profile->id;
 		}
 
 		/**
@@ -116,7 +136,46 @@ Class Endomondo {
 						'workoutId' => $workoutId
 				);
 				$workout = $this->get_site(self::URL_WORKOUT, $params);
+				print_r($workout);
 				return new EndomondoWorkout(json_decode($workout, 1));
+		}
+
+		public function get_profile() {
+				$params = array(
+						'authToken' => $this->get_auth_token()
+				);
+				return json_decode($this->get_site(self::URL_PROFILE_GET, $params));
+		}
+
+		public function post_account_info($input) {
+				$params = array(
+						'authToken' => $this->get_auth_token(),
+						'userId' => $this->getUserID(),
+						'input' => $input
+				);
+				$workout = $this->get_site(self::URL_PROFILE_POST, $params);
+				return $workout;
+		}
+
+		public function create_workout($input) {
+
+				$params = array(
+						'authToken' => $this->get_auth_token(),
+						'userId' => $this->getUserID(),
+				);
+				$params['input'] = json_encode($input);
+				return $this->get_site(self::URL_WORKOUT_CREATE, $params);
+		}
+
+		public function post_workout($input) {
+
+				$params = array(
+						'authToken' => $this->get_auth_token(),
+						'userId' => $this->getUserID(),
+						'gzip' => 'false'
+				);
+				$params['input'] = json_encode($input);
+				return $this->get_site(self::URL_WORKOUT_POST, $params);
 		}
 
 		/**
@@ -199,38 +258,9 @@ Class Endomondo {
 		}
 
 		public function get_site($site, $fields = NULL) {
-				$data = $this->get_curl_data($fields);
-				$url = $site . '?' . $data;
-				$this->curl_handler = curl_init();
-
-				if (substr($url, 0, 8) == "https://")
-						curl_setopt($this->curl_handler, CURLOPT_SSL_VERIFYPEER, FALSE);
-				curl_setopt($this->curl_handler, CURLOPT_USERAGENT, $this->user_agent);
-				curl_setopt($this->curl_handler, CURLOPT_HEADER, false);
-				curl_setopt($this->curl_handler, CURLOPT_URL, $url);
-				curl_setopt($this->curl_handler, CURLOPT_REFERER, $url);
-				curl_setopt($this->curl_handler, CURLOPT_RETURNTRANSFER, TRUE);
-
-				$data = curl_exec($this->curl_handler);
-
-				curl_close($this->curl_handler);
-				return $data;
-		}
-
-		/**
-		 * Function glues keys and parameters in one long urlsafe link using & signs between
-		 *
-		 * @param array $fields parameters
-		 * @return type
-		 */
-		private function get_curl_data(array $fields) {
-				$fields_string = '';
-				foreach ($fields as $key => $value) {
-						$fields_string .= urlencode($key) . '=' . urlencode($value) . '&';
-				}
-				return rtrim($fields_string, '&');
+			$url = $site . '?' . http_build_query($fields);
+			$response = $this->httpclient->post($url, array("headers" => array("User-Agent" => $this->user_agent)));
+			return (string) $response->getBody();
 		}
 
 }
-
-?>
