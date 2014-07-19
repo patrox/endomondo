@@ -2,8 +2,9 @@
 
 namespace Endomondo;
 
-Class EndomondoWorkout {
+Class Workout {
 
+	private $endomondo;
 	private $sport;
 	private $privacy_workout;
 	private $id;
@@ -82,16 +83,41 @@ Class EndomondoWorkout {
     49 => 'Gymnastics',
     50 => 'Step counter');
 
-	public function __construct($source){
+	public function __construct($endomondo, $source){
 		$this->source = $source;
+		$this->endomondo = $endomondo;
 		$this->id = $source['id'];
 		$date = new \DateTime();
 		$this->start_time = $date->setTimestamp(strtotime($source['start_time']));
 		$this->sport = $source['sport'];
-		$this->calories = $source['calories'];
-		$this->distance = $source['distance'];
-		$this->duration = $source['duration'];
+		$this->calories = isset($source['calories']) ? $source['calories'] : false;
+		$this->distance = isset($source['distance']) ? $source['distance'] : 0;
+		$this->duration = isset($source['duration']) ? $source['duration'] : 0;
 		$this->points = isset($source['points']) ? $source['points'] : array();
+	}
+
+	private function buildEndomondoData(){
+
+		$datas = array(
+			'sport' => $this->sport,
+			'duration' => $this->duration,
+			'distance' => $this->distance,
+			'start_time' => $this->start_time->format("Y-m-d H:i:s \U\T\C")
+			);
+		if($this->calories){
+			$datas['calories'] = $this->calories;
+		}
+
+		return $datas;
+
+	}
+
+	public function push(){
+		$this->endomondo->edit_workout($this->id, $this->buildEndomondoData());
+	}
+
+	public function setSport($sport){
+		$this->sport = $sport;
 	}
 
 	private function getSportName(){

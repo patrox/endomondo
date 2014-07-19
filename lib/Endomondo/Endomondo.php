@@ -8,7 +8,7 @@ use GuzzleHttp\Client;
 
 Class Endomondo {
 
-		public $country = "PL";
+		public $country = "EN";
 		public $device_id = null;
 		public $os = "Android";
 		public $app_version = "10.2.6";
@@ -21,11 +21,14 @@ Class Endomondo {
 		private $email = null;
 		private $password = null;
 		private $profile = null;
+		private $workoutFactory = null;
 
 		# Authentication url. Special case.
 		const URL_AUTH = '/mobile/auth';
+
 		# Page for latest workouts.
 		const URL_WORKOUTS = '/mobile/api/workout/list';
+
 		# Single workout
 		const URL_WORKOUT = '/mobile/api/workout/get';
 
@@ -35,7 +38,7 @@ Class Endomondo {
 
 		const URL_WORKOUT_POST  = '/mobile/api/workout/post';
 
-		const URL_WORKOUT_CREATE  = '/mobile/api/workout/create';
+		const URL_WORKOUT_CREATE  = '/mobile/track';
 		# Running track
 		const URL_TRACK = '/mobile/readTrack';
 		# Music track
@@ -53,7 +56,7 @@ Class Endomondo {
 				$this->password = $password;
 
 				$profile = $this->get_profile();
-
+				$this->workoutFactory = new WorkoutFactory($this);
 				$this->profile = $profile->data;
 		}
 
@@ -104,10 +107,12 @@ Class Endomondo {
 				);
 				if (isset($userId))
 						$params['userId'] = $userId;
+				else
+						$params['userId'] = $this->profile->id;
 				$workoutsSource = json_decode($this->get_site(self::URL_WORKOUTS, $params), 1);
 				$workouts = array();
 				foreach($workoutsSource['data'] as $workout){
-					$workouts[] = new EndomondoWorkout($workout);
+					$workouts[] = $this->workoutFactory->create($workout);
 				}
 				return $workouts;
 		}
@@ -137,7 +142,7 @@ Class Endomondo {
 				);
 				$workout = $this->get_site(self::URL_WORKOUT, $params);
 				print_r($workout);
-				return new EndomondoWorkout(json_decode($workout, 1));
+				return new $this->workoutFactory->create(json_decode($workout, 1));
 		}
 
 		public function get_profile() {
@@ -147,34 +152,77 @@ Class Endomondo {
 				return json_decode($this->get_site(self::URL_PROFILE_GET, $params));
 		}
 
+		public function logWeight($weight, $date){
+			return $this->post_account_info(array("weight_kg" => $weight, "weight_time" => $date->format("Y-m-d H:i:s \U\T\C")));
+		}
+
 		public function post_account_info($input) {
 				$params = array(
 						'authToken' => $this->get_auth_token(),
 						'userId' => $this->getUserID(),
-						'input' => $input
+						'input' => json_encode($input),
+						'gzip' => false
 				);
 				$workout = $this->get_site(self::URL_PROFILE_POST, $params);
 				return $workout;
 		}
 
-		public function create_workout($input) {
+    private function bigRandomNumber($randNumberLength)
+    {
+        $randNumber = null;
 
+        for ($i = 0; $i < $randNumberLength; $i++) {
+            $randNumber .= rand(0, 9);
+        }
+
+        return $randNumber;
+    }
+
+		public function create_workout($sport, $duration) {
 				$params = array(
 						'authToken' => $this->get_auth_token(),
 						'userId' => $this->getUserID(),
+						'workoutId' => '-' . $this->bigRandomNumber(16) . '',
+						'duration' => $duration,
+						'sport' => $sport,
+						'distance' => 0,
+						'trackPoints' => false,
+						'extendedResponse' => true,
+            'gzip' => 'false'
 				);
-				$params['input'] = json_encode($input);
-				return $this->get_site(self::URL_WORKOUT_CREATE, $params);
+				$response = $this->get_site(self::URL_WORKOUT_CREATE, $params);
+				$split = explode("\n", $response);
+				if($split[0] == 'OK'){
+					echo str_replace("workout.id=", "", $split[1]);
+					return $this->workoutFactory->create(
+						array(
+							"id" => str_replace("workout.id=", "", $split[1]),
+							'duration' => $duration,
+							'sport' => $sport,
+							'start_time' => gmdate("Y-m-d H:i:s \U\T\C", time())
+							));
+				} else {
+					return false;
+				}
 		}
 
-		public function post_workout($input) {
-
+		public function edit_workout($id, $edited) {
+				if($id == 0){
+					if($this->create_workout($edited['sport'], $edited['duration'])){
+						$workouts = $this->workout_list(null, 1);
+						$workout = $workouts[0];
+						$id = $workout->getId();
+					} else {
+						return false;
+					}
+				}
 				$params = array(
 						'authToken' => $this->get_auth_token(),
 						'userId' => $this->getUserID(),
-						'gzip' => 'false'
+						'gzip' => 'false',
+						'workoutId' => $id
 				);
-				$params['input'] = json_encode($input);
+				$params['input'] = json_encode($edited);
 				return $this->get_site(self::URL_WORKOUT_POST, $params);
 		}
 
