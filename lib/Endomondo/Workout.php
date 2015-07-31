@@ -81,7 +81,8 @@ Class Workout {
     47 => 'Yoga',
     48 => 'Martial arts',
     49 => 'Gymnastics',
-    50 => 'Step counter');
+    50 => 'Step counter',
+    87 => 'Circuit Training');
 
 	public function __construct($endomondo, $source){
 		$this->source = $source;
@@ -119,6 +120,10 @@ Class Workout {
 	public function setSport($sport){
 		$this->sport = $sport;
 	}
+
+    public function getSportId(){
+        return $this->sport;
+    }
 
 	private function getSportName(){
 		return $this->sportNames[$this->sport];
