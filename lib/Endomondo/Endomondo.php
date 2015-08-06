@@ -2,8 +2,8 @@
 
 namespace Endomondo;
 
-use Rhumsaa\Uuid\Uuid;
-use Rhumsaa\Uuid\Exception\UnsatisfiedDependencyException;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 use GuzzleHttp\Client;
 
 Class Endomondo {
