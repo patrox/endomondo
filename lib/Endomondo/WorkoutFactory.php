@@ -11,7 +11,7 @@ Class WorkoutFactory {
 	}
 
 	public function create($source){
-			return new Workout($this->endomondo, $source);
+		return new Workout($this->endomondo, $source);
 	}
 
 }

@@ -10,7 +10,7 @@
 	"require": {
 		"PHP" : ">=5.2",
 		"guzzlehttp/guzzle": "~4.0",
-		"rhumsaa/uuid": "*"		
+		"ramsey/uuid": "*"
 	},
 	"autoload": {
 		"psr-0": { "Endomondo": "lib/" }
