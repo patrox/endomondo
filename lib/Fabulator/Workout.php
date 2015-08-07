@@ -232,6 +232,15 @@ class Workout
     }
 
     /**
+     * Get gps points
+     * @return array
+     */
+    public function getPoints()
+    {
+        return $this->points;
+    }
+
+    /**
      * Save GPX of workout
      * @param  string
      */
@@ -268,16 +277,16 @@ class Workout
 
         foreach ($this->points as $point) {
             $trkpt = $trkseg->addChild('trkpt');
-            $trkpt->addChild('time', gmdate($this->timeFormat, strtotime($point['time'])));
-            $trkpt->addAttribute("lat", $point['lat']);
-            $trkpt->addAttribute("lon", $point['lng']);
-            if (isset($point['alt'])) {
-                $trkpt->addChild("ele", $point['alt']);
+            $trkpt->addChild('time', gmdate($this->timeFormat, strtotime($point->time)));
+            $trkpt->addAttribute("lat", $point->lat);
+            $trkpt->addAttribute("lon", $point->lng);
+            if (isset($point->alt)) {
+                $trkpt->addChild("ele", $point->alt);
             }
-            if (isset($point['hr'])) {
+            if (isset($point->hr)) {
                 $ext = $trkpt->addChild("extensions");
                 $trackPoint = $ext->addChild("gpxtpx:TrackPointExtension", '', 'gpxtpx');
-                $trackPoint->addChild("gpxtpx:hr", $point['hr'], 'gpxtpx');
+                $trackPoint->addChild("gpxtpx:hr", $point->hr, 'gpxtpx');
             }
         }
 

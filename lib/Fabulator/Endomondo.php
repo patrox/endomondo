@@ -217,13 +217,18 @@ class Endomondo
         return $response;
     }
 
+    public function getMyWorkoutList($maxResults = 40)
+    {
+        return $this->getWorkoutList($this->getUserID(), $maxResults);
+    }
+
     /**
      * Get workout list
      * @param  int || null $userId
      * @param  int $maxResult
      * @return array
      */
-    public function getWorkoutList($userId = null, $maxResults = 40)
+    public function getWorkoutList($userId, $maxResults = 40)
     {
         $params = array(
             'authToken' => $this->getAuthToken(),
@@ -232,11 +237,7 @@ class Endomondo
             'maxResults' => $maxResults
         );
 
-        if ($userId == null) {
-            $params['userId'] = $this->getUserID();
-        } else {
-            $params['userId'] = $this->profile->id;
-        }
+        $params['userId'] = $userId;
 
         $workoutsSource = json_decode($this->requestApi(self::URL_WORKOUTS, $params));
 
@@ -273,7 +274,7 @@ class Endomondo
      * @param  float $distance in kilometres
      * @return object Workout
      */
-    public function createWorkout($sport, \DateTime $start, $duration, $distance = 0.0)
+    public function createWorkout($sport, \DateTime $start, $duration, $distance = 0.0, $calories = false)
     {
         $params = [
             'authToken' => $this->getAuthToken(),
@@ -297,12 +298,18 @@ class Endomondo
             $workouts = $this->getWorkoutList(null, 1);
             $id = $workouts[0]->getId();
             try {
-                $this->editWorkout($id, [
+                $set = [
                     'start_time' => gmdate("Y-m-d H:i:s \U\T\C", $start->format("U")),
                     'sport' => $sport,
                     'duration' => $duration,
                     'distance' => $distance
-                    ]);
+                    ];
+
+                if ($calories) {
+                    $set['calories'] = $calories;
+                };
+
+                $this->editWorkout($id, $set);
             } catch (Exception $e) {
                 throw new \Exception("Creating of workout was unsuccesfull: " . $e->getMessage());
             }
