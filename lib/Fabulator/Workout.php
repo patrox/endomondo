@@ -102,6 +102,7 @@ class Workout
         $this->distance = isset($source->distance) ? $source->distance : 0;
         $this->duration = isset($source->duration) ? $source->duration : 0;
         $this->points = isset($source->points) ? $source->points : array();
+        $this->heart_rate_avg = isset($source->heart_rate_avg) ? $source->heart_rate_avg : null;
     }
 
     /**
@@ -221,6 +222,15 @@ class Workout
     public function getDistance()
     {
         return $this->distance;
+    }
+
+    /**
+     * Get avarge hearth rate
+     * @return integer
+     */
+    public function getHeartRateAvg()
+    {
+        return $this->heart_rate_avg;
     }
 
     /**

@@ -8,8 +8,8 @@
         }
     ],
 	"require": {
-		"PHP" : ">=5.3",
-		"guzzlehttp/guzzle": "~4.0",
+		"PHP" : ">=5.5",
+		"guzzlehttp/guzzle": "~6.0",
 		"ramsey/uuid": "~2.8.2"
 	},
 	"autoload": {
