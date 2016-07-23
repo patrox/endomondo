@@ -161,8 +161,13 @@ class Endomondo
             'https://www.endomondo.com/users/' . $this->userId,
             ['cookies' => true]
         );
-        $this->csrf = SetCookie::fromString($response->getHeaders()['Set-Cookie'][0])
-            ->getValue();
+
+        foreach ($response->getHeaders()['Set-Cookie'] as $item) {
+            $cookie = SetCookie::fromString($item);
+            if ($cookie->getName() === 'CSRF_TOKEN') {
+                $this->csrf = $cookie->getValue();
+            }
+        }
     }
 
     /**
