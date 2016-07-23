@@ -100,10 +100,11 @@ class Workout
     }
 
     /**
-     * Parse data for request to Endomondo
+     * Parse data for request to Endomondo.
+     *
      * @return array
      */
-    private function toArray()
+    public function toArray()
     {
         $datas = array(
             'sport' => $this->sport,
@@ -117,6 +118,21 @@ class Workout
         }
 
         return $datas;
+    }
+
+    /**
+     * Convert workout to string.
+     *
+     * @return string
+     */
+    public function toString()
+    {
+        return $this->getId() . ' (' .
+                $this->getStart()->format('H:m:s d.m.Y')  . ', ' .
+                $this->getName() .', '.
+                $this->getDistance() .'km, ' .
+                round($this->getDuration() / 60) . 'min.' .
+                ')';
     }
 
     /**
@@ -217,9 +233,14 @@ class Workout
         print_r($this->source);
     }
 
+    /**
+     * Get heart reate avg.
+     *
+     * @return int|null
+     */
     public function getHeartRateAvg()
     {
-        return isset($this->source->heart_rate_avg) ? $this->source->heart_rate_avg : null;
+        return isset($this->source->heart_rate_avg) ? (int) $this->source->heart_rate_avg : null;
     }
 
     /**

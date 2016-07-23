@@ -31,11 +31,22 @@ class Workouts
      * Edit workout
      * @param  int $id          workout id
      * @param  array $data      data to update
-     * @return response         response from Endomondo
+     * @return object           response from Endomondo
      */
     public function edit($id, $data)
     {
         return $this->api->put('workouts/' . $id, $data);
+    }
+
+    /**
+     * Delete workout.
+     *
+     * @param  int $id      workout id
+     * @return object       response from Endomondo
+     */
+    public function delete($id)
+    {
+        return $this->api->delete('workouts/' . $id);
     }
 
     /**
@@ -44,12 +55,41 @@ class Workouts
      * @param  int $limit       how many workouts request
      * @return array            array of Workouts objects
      */
-    public function getList($limit = 15)
+    public function getLast($limit = 15)
     {
-        $workouts = $this->api->get('workouts/history', [
-            'limit' => $limit,
-            'expand' => 'workout'
+        return $this->filter([
+            'limit' => 15,
         ]);
+    }
+
+    /**
+     * Get list of workouts by start and end end.
+     *
+     * @param  \Datetime $start start of interval
+     * @param  \Datetime $end   end of interval
+     * @return array            array of Workouts objects
+     */
+    public function getByDates(\Datetime $start, \Datetime $end, $limit = 15)
+    {
+        return $this->filter([
+            'before' => $end->format('c'),
+            'after' => $start->format('c'),
+            'limit' => $limit
+        ]);
+    }
+
+    /**
+     * Filter workout list.
+     *
+     * @param  array $filters array of filters
+     * @return array          array of Workouts objects
+     */
+    public function filter($filters)
+    {
+        $base = [
+            'expand' => 'workout',
+        ];
+        $workouts = $this->api->get('workouts/history', array_merge($base, $filters));
 
         $list = [];
         foreach ($workouts->data as $workout) {
