@@ -1,6 +1,6 @@
 <?php
 
-namespace Fabulator;
+namespace Fabulator\Endomondo;
 
 class Workout
 {
@@ -86,14 +86,9 @@ class Workout
         Endomondo::SPORT_CIRKUIT_TRAINING => 'Circuit Training'
     ];
 
-    /**
-     * @param Endomondo $endomondo
-     * @param stdClass Object $source
-     */
-    public function __construct($endomondo, $source)
+    public function __construct($source)
     {
         $this->source = $source;
-        $this->endomondo = $endomondo;
         $this->id = $source->id;
         $date = new \DateTime();
         $this->start_time = $date->setTimestamp(strtotime($source->start_time));
@@ -102,14 +97,13 @@ class Workout
         $this->distance = isset($source->distance) ? $source->distance : 0;
         $this->duration = isset($source->duration) ? $source->duration : 0;
         $this->points = isset($source->points) ? $source->points : array();
-        $this->heart_rate_avg = isset($source->heart_rate_avg) ? $source->heart_rate_avg : null;
     }
 
     /**
      * Parse data for request to Endomondo
      * @return array
      */
-    private function buildEndomondoData()
+    private function toArray()
     {
         $datas = array(
             'sport' => $this->sport,
@@ -123,15 +117,6 @@ class Workout
         }
 
         return $datas;
-    }
-
-    /**
-     * Push workout do endomondo
-     * @return stdClass Object
-     */
-    public function push()
-    {
-        $this->endomondo->editWorkout($this->id, $this->buildEndomondoData());
     }
 
     /**
@@ -225,20 +210,16 @@ class Workout
     }
 
     /**
-     * Get avarge hearth rate
-     * @return integer
-     */
-    public function getHeartRateAvg()
-    {
-        return $this->heart_rate_avg;
-    }
-
-    /**
      * Debug for source
      */
     public function printSource()
     {
         print_r($this->source);
+    }
+
+    public function getHeartRateAvg()
+    {
+        return isset($this->source->heart_rate_avg) ? $this->source->heart_rate_avg : null;
     }
 
     /**
