@@ -124,6 +124,19 @@ class Endomondo
     }
 
     /**
+     * Sent delete request.
+     *
+     * @param  string $endpoint requsted endpoint
+     * @return object           response
+     */
+    public function delete($endpoint)
+    {
+        $this->generateCSRFToken();
+
+        return $this->request('DELETE', 'v1/users/' . $this->userId . '/' . $endpoint);
+    }
+
+    /**
      * Regular request on Endomondo API.
      *
      * @param  string $method   http method

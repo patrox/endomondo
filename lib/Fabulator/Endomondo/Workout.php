@@ -199,6 +199,17 @@ class Workout
     }
 
     /**
+     * Get end of workout
+     *
+     * @return DateTime
+     */
+    public function getEnd()
+    {
+        $end = clone $this->getStart();
+        return $end->add(new \DateInterval('PT'. $this->getDuration() .'S'));
+    }
+
+    /**
      * Get duration in seconds
      * @return int
      */
