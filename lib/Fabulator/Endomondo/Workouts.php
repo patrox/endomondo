@@ -50,6 +50,23 @@ class Workouts
     }
 
     /**
+     * Create new Endomondo workout
+     * 
+     * @param  int       id of sport
+     * @param  \DateTime start of workout
+     * @param  int       duration in decs
+     * @param  float     distance in km
+     * @param  int       number of calories   
+     * @return int       id of endomondo workout
+     */
+    public function create($sport, \DateTime $start, $duration, $distance = 0.0, $calories = false)
+    {
+        return $this->api
+            ->getOldAPI()
+            ->createWorkout($sport, $start, $duration, $distance, $calories);
+    }
+
+    /**
      * Request list of last workouts.
      *
      * @param  int $limit       how many workouts request

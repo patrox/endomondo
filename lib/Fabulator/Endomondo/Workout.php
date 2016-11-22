@@ -4,33 +4,16 @@ namespace Fabulator\Endomondo;
 
 class Workout
 {
-
-    private $endomondo;
     private $sport;
-    private $privacy_workout;
     private $id;
     private $distance;
     private $duration;
-    private $burgers_burned;
-    private $name;
-    private $owner_id;
     private $calories;
     private $start_time;
-    private $speed_avg;
     private $points;
-    private $altitude_min;
-    private $descent;
-    private $ascent;
-    private $altitude_max;
-    private $hydration;
-    private $speed_max;
-    private $heart_rate_max;
-    private $heart_rate_avg;
-    private $live;
     private $souce;
-    private $playlist;
-    private $gpx = false;
-    private $timeFormat = 'Y-m-d\TH:i:s\Z';
+    private $gpx;
+    
     private $sportNames = [
         Endomondo::SPORT_RUNNING  => 'Running',
         Endomondo::SPORT_CYCLING_TRANSPORT  => 'Cycling, transport',
@@ -62,7 +45,7 @@ class Workout
         Endomondo::SPORT_BOXING => 'Boxing',
         Endomondo::SPORT_CLIMBING_STAIRS => 'Climbing stairs',
         Endomondo::SPORT_CRICKET => 'Cricket',
-        Endomondo::SPORT_CROSS_TRAINING => 'Cross training',
+        Endomondo::SPORT_ELLIPTICAL_TRAINING => 'Elliptical training',
         Endomondo::SPORT_DANCING => 'Dancing',
         Endomondo::SPORT_FENCING => 'Fencing',
         Endomondo::SPORT_FOOTBALL_AMERICAN => 'Football, American',
@@ -300,7 +283,7 @@ class Workout
 
         foreach ($this->points as $point) {
             $trkpt = $trkseg->addChild('trkpt');
-            $trkpt->addChild('time', gmdate($this->timeFormat, strtotime($point->time)));
+            $trkpt->addChild('time', gmdate('Y-m-d\TH:i:s\Z', strtotime($point->time)));
             $trkpt->addAttribute("lat", $point->lat);
             $trkpt->addAttribute("lon", $point->lng);
             if (isset($point->alt)) {

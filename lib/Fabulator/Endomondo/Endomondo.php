@@ -37,7 +37,7 @@ class Endomondo
     const SPORT_BOXING = 27;
     const SPORT_CLIMBING_STAIRS = 28;
     const SPORT_CRICKET = 29;
-    const SPORT_CROSS_TRAINING = 30;
+    const SPORT_ELLIPTICAL_TRAINING = 30;
     const SPORT_DANCING = 31;
     const SPORT_FENCING = 32;
     const SPORT_FOOTBALL_AMERICAN = 33;
@@ -79,19 +79,44 @@ class Endomondo
      *
      * @var Client
      */
-    private $httpclient;
+    public $httpclient;
 
     /**
      * CSFR token.
      *
      * @var string
      */
-    private $csrf = '-first-';
+    public $csrf = '-first-';
 
+    /**
+     * Old Endomondo API
+     * Only with old API you can create workouts.
+     * 
+     * @var EndomondoOld
+     */
+    private $oldApi;
+
+    /**
+     * User email
+     * 
+     * @var string
+     */
+    private $email;
+
+    /**
+     * User password
+     * 
+     * @var string
+     */
+    private $password;
+
+    /**
+     * Constructor
+     */
     public function __construct()
     {
         $this->httpclient = new Client([
-            'base_url' => 'https://www.endomondo.com/rest/'
+            'base_url' => 'https://www.endomondo.com/'
             ]);
         $this->workouts = new Workouts($this);
     }
@@ -105,7 +130,7 @@ class Endomondo
      */
     public function get($endpoint, $data = [])
     {
-        return $this->request('GET', 'v1/users/' . $this->userId . '/' . $endpoint . '?' . http_build_query($data));
+        return $this->request('GET', 'rest/v1/users/' . $this->userId . '/' . $endpoint . '?' . http_build_query($data));
     }
 
     /**
@@ -120,7 +145,15 @@ class Endomondo
         // regenerate CSFR token, need when you updating data
         $this->generateCSRFToken();
 
-        return $this->request('PUT', 'v1/users/' . $this->userId . '/' . $endpoint, $data);
+        return $this->request('PUT', 'rest/v1/users/' . $this->userId . '/' . $endpoint, $data);
+    }
+
+    public function post($endpoint, $data)
+    {
+        // regenerate CSFR token, need when you updating data
+        $this->generateCSRFToken();
+
+        return $this->request('POST', 'rest/v1/users/' . $this->userId . '/' . $endpoint, $data);
     }
 
     /**
@@ -133,7 +166,7 @@ class Endomondo
     {
         $this->generateCSRFToken();
 
-        return $this->request('DELETE', 'v1/users/' . $this->userId . '/' . $endpoint);
+        return $this->request('DELETE', 'rest/v1/users/' . $this->userId . '/' . $endpoint);
     }
 
     /**
@@ -145,6 +178,11 @@ class Endomondo
      * @return object           response
      */
     public function request($method, $endpoint, $data = [])
+    {
+        return json_decode((string) $this->getResponse($method, $endpoint, $data)->getBody());
+    }
+
+    public function getResponse($method, $endpoint, $data = [])
     {
         $method = strtolower($method);
 
@@ -159,10 +197,7 @@ class Endomondo
             ]
         ];
 
-        $response = $this->httpclient->$method($endpoint, $options);
-
-        // decode answer
-        return json_decode((string) $response->getBody());
+        return $this->httpclient->$method($endpoint, $options);
     }
 
     /**
@@ -171,7 +206,7 @@ class Endomondo
     public function generateCSRFToken()
     {
         $response = $this->httpclient->get(
-            'https://www.endomondo.com/users/' . $this->userId,
+            '/users/' . $this->userId,
             ['cookies' => true]
         );
 
@@ -192,9 +227,11 @@ class Endomondo
      */
     public function login($email, $password)
     {
-        $response = $this->request('POST', 'session', [
-            'email' => $email,
-            'password' => $password,
+        $this->email = $email;
+        $this->password = $password;
+        $response = $this->request('POST', 'rest/session', [
+            'email' => $this->email,
+            'password' => $this->password,
             'remember' => true
         ]);
         $this->userId = $response->id;
@@ -209,5 +246,24 @@ class Endomondo
     public function getUserInfo()
     {
         return $this->request('GET', 'session');
+    }
+
+    /**
+     * Get old API that can do some more things than the new
+     * eg. update weight, create workout
+     */
+    public function getOldAPI() 
+    {
+        // was old api already prepared? use it
+        if ($this->oldApi) {
+            return $this->oldApi;
+        }
+
+        // if not get auth token and use it
+        $this->oldApi = new EndomondoOld();
+        $authToken = $this->oldApi->requestAuthToken($this->email, $this->password);
+        $this->oldApi->setAuthToken($authToken);
+
+        return $this->oldApi;
     }
 }
