@@ -120,6 +120,7 @@ class Workout
 
     /**
      * Set sport
+     * 
      * @param int $sport
      */
     public function setSport($sport)
@@ -129,6 +130,7 @@ class Workout
 
     /**
      * Get sport id
+     * 
      * @return int
      */
     public function getSportId()
@@ -138,6 +140,7 @@ class Workout
 
     /**
      * Get sport name
+     * 
      * @return string
      */
     private function getSportName()
@@ -147,6 +150,7 @@ class Workout
 
     /**
      * Get escaped sport name
+     * 
      * @return string
      */
     private function getGPXSportName()
@@ -156,6 +160,7 @@ class Workout
 
     /**
      * Get id of workout
+     * 
      * @return string
      */
     public function getId()
@@ -165,6 +170,7 @@ class Workout
 
     /**
      * Get sport name
+     * 
      * @return string
      */
     public function getName()
@@ -174,6 +180,7 @@ class Workout
 
     /**
      * Get start time
+     * 
      * @return DateTime
      */
     public function getStart()
@@ -194,6 +201,7 @@ class Workout
 
     /**
      * Get duration in seconds
+     * 
      * @return int
      */
     public function getDuration()
@@ -203,6 +211,7 @@ class Workout
 
     /**
      * Get calories
+     * 
      * @return int
      */
     public function getCalories()
@@ -212,6 +221,7 @@ class Workout
 
     /**
      * Get distance in kilometres
+     * 
      * @return float
      */
     public function getDistance()
@@ -239,6 +249,7 @@ class Workout
 
     /**
      * Get gps points
+     * 
      * @return array
      */
     public function getPoints()
@@ -248,6 +259,7 @@ class Workout
 
     /**
      * Save GPX of workout
+     * 
      * @param  string
      */
     public function saveGPX($file)
@@ -259,6 +271,7 @@ class Workout
 
     /**
      * Get GPX document
+     * 
      * @return string
      */
     public function getGPX()
@@ -268,6 +281,7 @@ class Workout
 
     /**
      * Generate GPX of workout
+     * 
      * @return string
      */
     private function generateGPX()

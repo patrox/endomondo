@@ -17,3 +17,10 @@ You can even export gpx files.
 $workout = $endomondo->workouts->get('560851703');
 $workout->saveGPX('./temp/workout.gpx');
 ```
+
+# Create workouts
+You can easily create workouts. This will create a run in New Year, 35 minutes long and 10.23 km length.
+
+```
+$endomondo->workouts->create(\Fabulator\Endomondo\Endomondo::SPORT_RUNNING, new DateTime("2015-01-01 13:45:15"), 35 * 60, 10.23)
+```
