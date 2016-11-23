@@ -1,36 +1,19 @@
 <?php
 
-namespace Fabulator;
+namespace Fabulator\Endomondo;
 
 class Workout
 {
-
-    private $endomondo;
     private $sport;
-    private $privacy_workout;
     private $id;
     private $distance;
     private $duration;
-    private $burgers_burned;
-    private $name;
-    private $owner_id;
     private $calories;
     private $start_time;
-    private $speed_avg;
     private $points;
-    private $altitude_min;
-    private $descent;
-    private $ascent;
-    private $altitude_max;
-    private $hydration;
-    private $speed_max;
-    private $heart_rate_max;
-    private $heart_rate_avg;
-    private $live;
     private $souce;
-    private $playlist;
-    private $gpx = false;
-    private $timeFormat = 'Y-m-d\TH:i:s\Z';
+    private $gpx;
+    
     private $sportNames = [
         Endomondo::SPORT_RUNNING  => 'Running',
         Endomondo::SPORT_CYCLING_TRANSPORT  => 'Cycling, transport',
@@ -62,7 +45,7 @@ class Workout
         Endomondo::SPORT_BOXING => 'Boxing',
         Endomondo::SPORT_CLIMBING_STAIRS => 'Climbing stairs',
         Endomondo::SPORT_CRICKET => 'Cricket',
-        Endomondo::SPORT_CROSS_TRAINING => 'Cross training',
+        Endomondo::SPORT_ELLIPTICAL_TRAINING => 'Elliptical training',
         Endomondo::SPORT_DANCING => 'Dancing',
         Endomondo::SPORT_FENCING => 'Fencing',
         Endomondo::SPORT_FOOTBALL_AMERICAN => 'Football, American',
@@ -86,14 +69,9 @@ class Workout
         Endomondo::SPORT_CIRKUIT_TRAINING => 'Circuit Training'
     ];
 
-    /**
-     * @param Endomondo $endomondo
-     * @param stdClass Object $source
-     */
-    public function __construct($endomondo, $source)
+    public function __construct($source)
     {
         $this->source = $source;
-        $this->endomondo = $endomondo;
         $this->id = $source->id;
         $date = new \DateTime();
         $this->start_time = $date->setTimestamp(strtotime($source->start_time));
@@ -102,14 +80,14 @@ class Workout
         $this->distance = isset($source->distance) ? $source->distance : 0;
         $this->duration = isset($source->duration) ? $source->duration : 0;
         $this->points = isset($source->points) ? $source->points : array();
-        $this->heart_rate_avg = isset($source->heart_rate_avg) ? $source->heart_rate_avg : null;
     }
 
     /**
-     * Parse data for request to Endomondo
+     * Parse data for request to Endomondo.
+     *
      * @return array
      */
-    private function buildEndomondoData()
+    public function toArray()
     {
         $datas = array(
             'sport' => $this->sport,
@@ -126,16 +104,23 @@ class Workout
     }
 
     /**
-     * Push workout do endomondo
-     * @return stdClass Object
+     * Convert workout to string.
+     *
+     * @return string
      */
-    public function push()
+    public function toString()
     {
-        $this->endomondo->editWorkout($this->id, $this->buildEndomondoData());
+        return $this->getId() . ' (' .
+                $this->getStart()->format('H:m:s d.m.Y')  . ', ' .
+                $this->getName() .', '.
+                $this->getDistance() .'km, ' .
+                round($this->getDuration() / 60) . 'min.' .
+                ')';
     }
 
     /**
      * Set sport
+     * 
      * @param int $sport
      */
     public function setSport($sport)
@@ -145,6 +130,7 @@ class Workout
 
     /**
      * Get sport id
+     * 
      * @return int
      */
     public function getSportId()
@@ -154,6 +140,7 @@ class Workout
 
     /**
      * Get sport name
+     * 
      * @return string
      */
     private function getSportName()
@@ -163,6 +150,7 @@ class Workout
 
     /**
      * Get escaped sport name
+     * 
      * @return string
      */
     private function getGPXSportName()
@@ -172,6 +160,7 @@ class Workout
 
     /**
      * Get id of workout
+     * 
      * @return string
      */
     public function getId()
@@ -181,6 +170,7 @@ class Workout
 
     /**
      * Get sport name
+     * 
      * @return string
      */
     public function getName()
@@ -190,6 +180,7 @@ class Workout
 
     /**
      * Get start time
+     * 
      * @return DateTime
      */
     public function getStart()
@@ -198,7 +189,19 @@ class Workout
     }
 
     /**
+     * Get end of workout
+     *
+     * @return DateTime
+     */
+    public function getEnd()
+    {
+        $end = clone $this->getStart();
+        return $end->add(new \DateInterval('PT'. $this->getDuration() .'S'));
+    }
+
+    /**
      * Get duration in seconds
+     * 
      * @return int
      */
     public function getDuration()
@@ -208,6 +211,7 @@ class Workout
 
     /**
      * Get calories
+     * 
      * @return int
      */
     public function getCalories()
@@ -217,20 +221,12 @@ class Workout
 
     /**
      * Get distance in kilometres
+     * 
      * @return float
      */
     public function getDistance()
     {
         return $this->distance;
-    }
-
-    /**
-     * Get avarge hearth rate
-     * @return integer
-     */
-    public function getHeartRateAvg()
-    {
-        return $this->heart_rate_avg;
     }
 
     /**
@@ -242,7 +238,18 @@ class Workout
     }
 
     /**
+     * Get heart reate avg.
+     *
+     * @return int|null
+     */
+    public function getHeartRateAvg()
+    {
+        return isset($this->source->heart_rate_avg) ? (int) $this->source->heart_rate_avg : null;
+    }
+
+    /**
      * Get gps points
+     * 
      * @return array
      */
     public function getPoints()
@@ -252,6 +259,7 @@ class Workout
 
     /**
      * Save GPX of workout
+     * 
      * @param  string
      */
     public function saveGPX($file)
@@ -263,6 +271,7 @@ class Workout
 
     /**
      * Get GPX document
+     * 
      * @return string
      */
     public function getGPX()
@@ -272,6 +281,7 @@ class Workout
 
     /**
      * Generate GPX of workout
+     * 
      * @return string
      */
     private function generateGPX()
@@ -287,7 +297,7 @@ class Workout
 
         foreach ($this->points as $point) {
             $trkpt = $trkseg->addChild('trkpt');
-            $trkpt->addChild('time', gmdate($this->timeFormat, strtotime($point->time)));
+            $trkpt->addChild('time', gmdate('Y-m-d\TH:i:s\Z', strtotime($point->time)));
             $trkpt->addAttribute("lat", $point->lat);
             $trkpt->addAttribute("lon", $point->lng);
             if (isset($point->alt)) {
