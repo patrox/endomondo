@@ -297,6 +297,7 @@ class EndomondoOld
             try {
                 $set = [
                     'start_time' => gmdate("Y-m-d H:i:s \U\T\C", $start->format("U")),
+                    'end_time' => gmdate("Y-m-d H:i:s \U\T\C", $start->format("U") + $duration),
                     'sport' => $sport,
                     'duration' => $duration,
                     'distance' => $distance
